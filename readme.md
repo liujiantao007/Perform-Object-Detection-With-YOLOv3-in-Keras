@@ -12,7 +12,7 @@
       |__xml_to_yolo_format.py
       
   ```````````````````````````
-  * The structure of the `COCO_dataset`
+* The structure of the `COCO_dataset`
   
   ````````````````````````````````````````
   Json_to_yolo_format_data
