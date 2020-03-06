@@ -1,3 +1,7 @@
+#Custom object training and detection with YOLOv3, Darknet and OpenCV
+https://blog.francium.tech/custom-object-training-and-detection-with-yolov3-darknet-and-opencv-41542f2ff44e
+
+https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-own-dataset-4dcfc7c1c34c
 
 * The structure of the `BCCD_dataset`
 
