@@ -82,4 +82,23 @@ https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-o
   </annotation>
   ```
 
+* genertae train.txt and test.txt
+  
+  ````````````````````````````````````````
+  create folder data 
+  data
+  |
+  |
+  ├── obj-- |
+  │   |     |
+      |     |_____.jpg or .txt
+      |      
+      |__generate_train.py #it make to files that have path of train and text images
 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
