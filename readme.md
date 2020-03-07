@@ -13,7 +13,15 @@ https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-o
   │   └── JPEGImages
   │   |   └── BloodImage_00XYZ.jpg (364 items)
       |
-      |__xml_to_yolo_format.py
+      |____img.py #that create list of image that are not in folder
+      |
+      |____xml.pt # create a list of xml file that not exist in folder
+      |
+      |____remove.py #remove image that not in xml file and remove xml that not match images
+      |
+      |____xml_to_text.py #yolo format text file
+
+
       
   ```````````````````````````
 * The structure of the `COCO_dataset`
