@@ -89,13 +89,35 @@ https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-o
   data
   |
   |
-  ├── obj-- |
-  │   |     |
-      |     |_____.jpg or .txt
-      |      
-      |__generate_train.py #it make to files that have path of train and text images
+  ├── obj
+  |    |
+  |    |_____.jpg or .txt         
+  |         
+  |__generate_train.py #it make to files that have path of train and text images
 
- 
+
+* my google drive folder format is
+  
+  ````````````````````````````````````````
+  BCCD
+  |
+  |
+  ├── Yolo-files
+  │            |
+  |            |_____.darknet53.conv.74 
+  |            |
+  |            |_____yolov3.weights 
+  |
+  |____Backup/
+  |
+  |____generate_train.py
+  |
+  |____obj.data
+  |
+  |____obj.names
+  |
+  |____obj.zip
+
  
  
  
