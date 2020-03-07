@@ -120,7 +120,8 @@ https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-o
 
  
  
- 
+ ![alt text](graph.png "sample")
+![alt text](result.png "sample")<br><br><br>
  
  
  
