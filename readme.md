@@ -121,8 +121,9 @@ https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-o
  
  
  <h3>graph<h3><br><br><br>
- ![alt text](graph.png "sample")<br>
- <h3>result </h3><br><br><br>
+  
+ ![alt text](graph.png "sample")<br><br>
+
 ![alt text](result.png "sample")<br><br><br>
  
  
