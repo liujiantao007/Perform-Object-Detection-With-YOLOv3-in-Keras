@@ -3,6 +3,10 @@ https://blog.francium.tech/custom-object-training-and-detection-with-yolov3-dark
 
 https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-own-dataset-4dcfc7c1c34c
 
+<h3>Install Darkflow</h3>
+https://slashml.blogspot.com/2018/07/installing-darkflow-on-ubuntu-1604.html
+
+
 * The structure of the `BCCD_dataset`
 
   ```
