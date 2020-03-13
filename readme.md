@@ -79,7 +79,7 @@
   	</object>
   </annotation>
   ```
-
+<h3>2.Yolo format </h3>
 * genertae train.txt and test.txt
   
   ````````````````````````````````````````
