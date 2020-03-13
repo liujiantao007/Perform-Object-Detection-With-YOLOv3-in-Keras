@@ -1,11 +1,4 @@
-#Custom object training and detection with YOLOv3, Darknet and OpenCV<br>
-https://blog.francium.tech/custom-object-training-and-detection-with-yolov3-darknet-and-opencv-41542f2ff44e<br>
-
-https://medium.com/@duraklefkan/training-yolov3-object-detection-api-with-your-own-dataset-4dcfc7c1c34c
-
-<h3>Install Darkflow</h3>
-https://slashml.blogspot.com/2018/07/installing-darkflow-on-ubuntu-1604.html
-
+<h2>Perform Object Detection Using Yolov3 and Tensorflow <h2>
 
 * The structure of the `BCCD_dataset`
 
