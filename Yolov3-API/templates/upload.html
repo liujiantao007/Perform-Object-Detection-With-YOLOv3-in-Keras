@@ -217,6 +217,8 @@
                 $('#msg').append(key + ' -> ' + data + '<br/>');
               } else {
                 $('#msg').append(data + '<br/>');
+                //this function redirect in result render function
+                window.location.href = "result";
               }
             })
           },
@@ -251,7 +253,7 @@
             <!-- Tabs Titles -->
              <!-- Icon -->
             <div class="fadeIn first">
-             <h3 class="meta-ask">Result..</h3>
+             
                     <!-- Upload  -->
 
 
@@ -307,7 +309,7 @@
  <footer class="footer clearfix">
   <!-- Copyright -->
 
-  <div class="footer-copyright text-center py-3"><a href="/logout">LOGOUT</a>
+  <div class="footer-copyright text-center py-3">
 
     <a href="https://github.com/panditrahulsharma?tab=repositories">© 2020 Copyright:Rahul Pandit</a>
   </div>

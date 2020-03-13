@@ -1,4 +1,16 @@
 #rahul pandit
+import time
+from absl import app, logging
+import cv2
+import numpy as np
+import tensorflow as tf
+from yolov3_tf2.models import (YoloV3, YoloV3Tiny)
+from yolov3_tf2.dataset import transform_images, load_tfrecord_dataset
+from yolov3_tf2.utils import draw_outputs
+from flask import Flask, request, Response, jsonify, send_from_directory, abort
+import os
+######################################################database################################
+#rahul pandit
 
 from flask import *
 from flask import Flask, request, jsonify, json, make_response, redirect, session, send_from_directory
@@ -12,20 +24,38 @@ import urllib.request
 #from app import app
 from werkzeug.utils import secure_filename
 import cv2
+#########################################################################################
 
-########################  import function define in model file  #########
 
-from model import blood_cell_classification
+# customize your API through the following parameters
+classes_path = './data/labels/obj.names'
+weights_path = './weights/yolov3.tf'
+tiny = False                    # set to True if using a Yolov3 Tiny model
+size = 416                      # size images are resized to for model
+output_path = './static/detections/'   # path to output folder where images with detections are saved
+num_classes = 1                # number of classes in model
 
-#create session in flask 
-#https://www.youtube.com/watch?v=iIhAfX4iek0
-#https://techwithtim.net/tutorials/flask/sessions/
+# load in weights and classes
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+if len(physical_devices) > 0:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+if tiny:
+    yolo = YoloV3Tiny(classes=num_classes)
+else:
+    yolo = YoloV3(classes=num_classes)
+
+yolo.load_weights(weights_path).expect_partial()
+print('weights loaded')
+
+class_names = [c.strip() for c in open(classes_path).readlines()]
+print('classes loaded')
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
-UPLOAD_FOLDER = '/home/rahul/Documents/yolo/upload'
+UPLOAD_FOLDER = './upload'
 
-
+# Initialize Flask application
 app = Flask(__name__)
 
 app.permanent_session_lifetime = timedelta(days=5)
@@ -34,182 +64,137 @@ app.secret_key = "hello" #encrypt data by this key on server
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-
-
-
 conn = MySQLdb.connect(host="localhost",user="root",password="root@123",db="rahul")
 
-@app.route("/")
-def index():
-	if "email" in session:
-		return redirect(url_for("upload"))
-	else:		
-		return render_template("signup.html", title="Flask signUp form")
-
-@app.route("/signUp", methods=['GET', 'POST'])
-def signUp():
-	try:
-		if request.method=='POST':
-			username = str(request.form["uname"])
-			password = str(request.form["pswd"])
-			email = str(request.form["email"])
-
-			cursor = conn.cursor() #make a pointer
-			cursor.execute("SELECT name FROM users WHERE email ='"+email+"'") #check user is exist or not
-			user = cursor.fetchall()
-			
-			if len(user) >0: #if length is greater 1 then user email is exist
-				return render_template("signup.html", title="User already Exist please try again another email")
-			
-			else:      #user not exist insert detail in database
-
-				cursor.execute("INSERT INTO users (name,password,email)VALUES(%s,%s,%s)",(username,password,email))
-				conn.commit()
-				session.permanent = True 
-				session['email']=email #if i user is exist at login time then create session and redirect to profile
-				return redirect(url_for("upload"))		
-			
-		else:
-			pass
-	except Exception as e:
-		return render_template("signup.html", title=e)
-
-	
-
-@app.route("/login")
-def login():
-	if "email" in session:
-		return redirect(url_for("upload"))
-	else:
-
-		return render_template("login.html",title="Flask Login Form")
 
 
+@app.route('/')
+def upload():
+	return render_template('upload.html',user_info='Object Detection using Yolov3,Tensorflow')
 
-
-@app.route("/checkUser",methods=["POST"])
-def check():
-	try:
-		if request.method=='POST':
-			email = str(request.form["email"])
-			password = str(request.form["pswd"])
-
-			cursor = conn.cursor()
-			cursor.execute("SELECT * FROM users WHERE email ='"+email+"' and password='"+password+"' ")
-			user = cursor.fetchall()
-			
-			if len(user) >0:
-					#https://stackoverflow.com/questions/26954122/how-can-i-pass-arguments-into-redirecturl-for-of-flask
-				session.permanent = True 
-				session['email']=email #if i user is exist at login time then create session and redirect to profile
-
-				return redirect(url_for("upload")) #data is a variable you can use any to send for home page
-
-			else:
-				return render_template("login.html", title="Invalid details")	
-			
-		else:
-			if "email" in session:  #when user try to go login page it automatically redirect to profile page
-				return redirect(url_for("upload"))
-
-			return render_template("login.html")
-
-	except Exception as e:
-		return render_template("login.html", title="Try again") #any excepton and error occured redirect page into register
-
-
-
-
-
-
-@app.route("/user")
-def user():
-	if "email" in session:
-		email = session["email"]
-
-		#now fetch all information of users
-		cursor = conn.cursor()
-		cursor.execute("SELECT * FROM users WHERE email ='"+email+"' ")
-		account = cursor.fetchall()
-		print(account)
-		return render_template("profile.html",user_info=account[0])
-	else:
-		return redirect(url_for("login"))
-
-"""
-***************upload file code here start******************
-"""
 
 def allowed_file(filename):
-	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-	
-@app.route('/upload')
-def upload():
-	if "email" in session:
-		email=session["email"]
-		cursor = conn.cursor()
-		cursor.execute("SELECT * FROM users WHERE email ='"+email+"' ")
-		account = cursor.fetchall()
-		return render_template('upload.html',user_info=account[0])
-	else:
-		return redirect(url_for("login"))
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    
+
+@app.route('/result')
+def result():
+	return render_template('result.html',user_info='Object Detection using Yolov3,Tensorflow')
+
+
 
 @app.route('/python-flask-files-upload', methods=['POST'])
 def upload_file():
-	# check if the post request has the file part
-	if 'files[]' not in request.files:
-		resp = jsonify({'message' : 'No file part in the request'})
-		resp.status_code = 400
-		return resp
-	
-	files = request.files.getlist('files[]')
-	
+    # check if the post request has the file part
+    if 'files[]' not in request.files:
+        resp = jsonify({'message' : 'No file part in the request'})
+        resp.status_code = 400
+        return resp
+    
+    files = request.files.getlist('files[]')
+    errors = {}
+    success = False
+    
+    #i am return image shape
+    result=[]
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            print(filename)
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-	errors = {}
-	success = False
-	
-	#i am return image shape
-	result=[]
-	for file in files:
-		if file and allowed_file(file.filename):
-			filename = secure_filename(file.filename)
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			img = cv2.imread(app.config['UPLOAD_FOLDER']+'/'+filename,0) #this code read image from folder
-			pred=blood_cell_classification(img)
-			result.append(pred)
-			print(img.shape)
-			success = True
-		else:
-			errors[file.filename] = 'File type is not allowed'
-	
-	if success and errors:
-		errors['message'] = 'File(s) successfully uploaded'
-		resp = jsonify(errors)
-		resp.status_code = 206
-		return resp
-	if success:		
-		resp = jsonify({'message' :result[0]})
-		resp.status_code = 201
-		return resp
-	else:
-		resp = jsonify(errors)
-		resp.status_code = 400
-		return resp
+            file.save(os.path.join(os.getcwd(), filename))
+
+            ##############################################################yolo code#########################################
+            img_raw = tf.image.decode_image(
+                open(filename, 'rb').read(), channels=3)
+            img = tf.expand_dims(img_raw, 0)
+            img = transform_images(img, size)
+            t1 = time.time()
+            boxes, scores, classes, nums = yolo(img)
+            t2 = time.time()
+            print('time: {}'.format(t2 - t1))
+
+            print('detections:')
+            for i in range(nums[0]):
+                print('\t{}, {}, {}'.format(class_names[int(classes[0][i])],
+                                                np.array(scores[0][i]),
+                                                np.array(boxes[0][i])))
+            img = cv2.cvtColor(img_raw.numpy(), cv2.COLOR_RGB2BGR)
+            img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
+            cv2.imwrite(output_path + 'detection.jpg', img)
+            print('output saved to: {}'.format(output_path + 'detection.jpg'))
+            
+            # prepare image for response
+            _, img_encoded = cv2.imencode('.png', img)
+            response = img_encoded.tostring()
+            
+            #remove temporary image
+            os.remove(filename)
+            success = True
+        else:
+            errors[file.filename] = 'File type is not allowed'
+    
+    if success and errors:
+        errors['message'] = 'File(s) successfully uploaded'
+        resp = jsonify(errors)
+        resp.status_code = 206
+        return resp
+    if success:     
+        resp = jsonify({'message' :'fwekfjwegfkjwegf'})
+        resp.status_code = 201
+        return resp
+    else:
+        resp = jsonify(errors)
+        resp.status_code = 400
+        return resp
 """
 ***************stop ******************
 """
 
 
 
-@app.route("/logout")
-def logout():
-    session.pop("email", None)
-    return redirect(url_for("login"))
+
+@app.route('/image', methods= ['POST'])
+def get_image():
+    image = request.files["images"]
+    image_name = image.filename
+    image.save(os.path.join(os.getcwd(), image_name))
+
+    img_raw = tf.image.decode_image(
+        open(image_name, 'rb').read(), channels=3)
+    img = tf.expand_dims(img_raw, 0)
+    img = transform_images(img, size)
+    t1 = time.time()
+    boxes, scores, classes, nums = yolo(img)
+    t2 = time.time()
+    print('time: {}'.format(t2 - t1))
+
+    print('detections:')
+    for i in range(nums[0]):
+        print('\t{}, {}, {}'.format(class_names[int(classes[0][i])],
+                                        np.array(scores[0][i]),
+                                        np.array(boxes[0][i])))
+    img = cv2.cvtColor(img_raw.numpy(), cv2.COLOR_RGB2BGR)
+    img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
+    cv2.imwrite(output_path + 'detection.jpg', img)
+    print('output saved to: {}'.format(output_path + 'detection.jpg'))
+    
+    # prepare image for response
+    _, img_encoded = cv2.imencode('.png', img)
+    response = img_encoded.tostring()
+    
+    #remove temporary image
+    os.remove(image_name)
+    print("********************************************************************")
+    print(response)
+    print("*********************************************************************")
+    try:
+        return Response(response=response, status=200, mimetype='image/png')
+    except FileNotFoundError:
+        abort(404)
 
 
-if __name__ == "__main__":
-	app.run(debug=True,port=4000)
 
-
-
-
+if __name__ == '__main__':
+    app.run(debug=True, host = '0.0.0.0', port=4000)
